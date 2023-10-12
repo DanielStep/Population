@@ -1,13 +1,17 @@
 using System.Data;
 using System.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Population.Domain;
 
 public class Repository : IRepository
 {
     private readonly IConfiguration _config;
-    public Repository(IConfiguration config)
+    private readonly PopulationDbContext _dbContext;
+    public Repository(IConfiguration config, PopulationDbContext dbContext)
     {
         _config = config;
+        _dbContext = dbContext;
     }
     public async Task LoadPopulationData(DataTable dataTable)
     {
@@ -22,16 +26,16 @@ public class Repository : IRepository
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("STATE", "StateCode"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("State", "State"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("REGIONTYPE", "REGIONTYPE"));
-                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Geography Level", "Geography Level"));
+                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Geography Level", "GeographyLevel"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("ASGS_2016", "ASGS_2016"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Region", "Region"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("TIME", "PopulationTime"));
-                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Census year", "Census year"));
+                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Census year", "CensusYear"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Value", "PopulationValue"));
-                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Flag Codes", "Flag Codes"));
+                sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Flag Codes", "FlagCodes"));
                 sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping("Flags", "Flags"));
 
-                sqlBulkCopy.DestinationTableName = "PopulationSchema.TempLoad";
+                sqlBulkCopy.DestinationTableName = "PopulationFlat";
                 con.Open();
 
                 await sqlBulkCopy.WriteToServerAsync(dataTable);
@@ -44,7 +48,7 @@ public class Repository : IRepository
     {
         using (SqlConnection con = new SqlConnection(_config.GetConnectionString("DbConnection")))
         {
-            using (SqlCommand command = new SqlCommand("PopulationSchema.sp_normalisePopulationTable", con))
+            using (SqlCommand command = new SqlCommand("sp_normalisePopulationTable", con))
             {
                 con.Open();
                 command.CommandType = CommandType.StoredProcedure;
@@ -53,4 +57,16 @@ public class Repository : IRepository
             }
         }
     }
+
+    public async Task<List<SA4PopulationData>> GetSA4PopData(string ASGS_2016, string sex)
+    {
+        return await _dbContext.SA4PopData.FromSql($@"SELECT ASGS_2016, Region, Age, Sex, PopulationValue, CensusYear FROM FactPopulation
+                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
+                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
+                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                        WHERE DimRegion.ASGS_2016 = {ASGS_2016} AND
+                                                                DimSex.Sex_ABS = {sex}")
+                                          .ToListAsync();
+    }
+
 }
