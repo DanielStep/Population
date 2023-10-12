@@ -1,7 +1,7 @@
 namespace Population.Domain;
 public class SA4PopulationData
 {
-    public string Age { get; set; }
+    public string AgeString { get; set; }
     public string Sex { get; set; }
     public int CensusYear { get; set; }
     public int PopulationValue { get; set; }

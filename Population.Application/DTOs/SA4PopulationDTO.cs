@@ -20,13 +20,13 @@ public class SA4PopulationDataQueryResult
         {
             dtos.Add(new SA4PopulationDataDTO()
             {
-                age = x.Age,
+                age = x.AgeString,
                 censusYear = x.CensusYear,
                 population = x.PopulationValue,
                 sex = x.Sex
             });
         });
-        return dtos.OrderBy(x => x.age).ToList();
+        return dtos;
     }
 }
 

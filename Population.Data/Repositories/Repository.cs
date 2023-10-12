@@ -60,12 +60,13 @@ public class Repository : IRepository
 
     public async Task<List<SA4PopulationData>> GetSA4PopData(string ASGS_2016, string sex)
     {
-        return await _dbContext.SA4PopData.FromSql($@"SELECT ASGS_2016, Region, Age, Sex, PopulationValue, CensusYear FROM FactPopulation
+        return await _dbContext.SA4PopData.FromSql($@"SELECT ASGS_2016, Region, Age, AgeString, Sex, PopulationValue, CensusYear FROM FactPopulation
                                                         JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
                                                         JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
                                                         JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
                                                         WHERE DimRegion.ASGS_2016 = {ASGS_2016} AND
-                                                                DimSex.Sex_ABS = {sex}")
+                                                              DimSex.Sex_ABS = {sex}
+                                                        ORDER BY TRY_CONVERT(INT, DimAge.Age), CensusYear;")
                                           .ToListAsync();
     }
 
