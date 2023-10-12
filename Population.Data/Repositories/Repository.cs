@@ -58,7 +58,7 @@ public class Repository : IRepository
         }
     }
 
-    public async Task<List<SA4PopulationData>> GetSA4PopData(string ASGS_2016, string sex)
+    public async Task<List<SA4PopulationData>> GetSA4SexPopulation(string ASGS_2016, string sex)
     {
         return await _dbContext.SA4PopData.FromSql($@"SELECT ASGS_2016, Region, Age, AgeString, Sex, PopulationValue, CensusYear FROM FactPopulation
                                                         JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
@@ -67,6 +67,40 @@ public class Repository : IRepository
                                                         WHERE DimRegion.ASGS_2016 = {ASGS_2016} AND
                                                               DimSex.Sex_ABS = {sex}
                                                         ORDER BY TRY_CONVERT(INT, DimAge.Age), CensusYear;")
+                                          .ToListAsync();
+    }
+
+    public async Task<List<SA4PopulationAgeDiffData>> GetSA4PopulationAgeDiff(string ASGS_2016, string sex, int yearLower, int yearHigher)
+    {
+        return await _dbContext.SA4PopulationAgeDiffData.FromSql($@"WITH CensusLower AS (
+                                                        SELECT Age, AgeString, PopulationValue AS PopulationLower
+                                                        FROM FactPopulation
+                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
+                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
+                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                        WHERE CensusYear = {yearLower} AND
+                                                        ASGS_2016 = {ASGS_2016} AND
+                                                        Sex_ABS = {sex}
+                                                    ),
+                                                    CensusUpper AS (
+                                                        SELECT Age, PopulationValue AS PopulationUpper
+                                                        FROM FactPopulation
+                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
+                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
+                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                        WHERE CensusYear = {yearHigher} AND
+                                                        ASGS_2016 = {ASGS_2016} AND
+                                                        Sex_ABS = {sex}
+                                                    )
+
+                                                    SELECT 
+                                                        c1.AgeString,
+                                                        c1.PopulationLower AS PopulationLower,
+                                                        c2.PopulationUpper AS PopulationUpper,
+                                                        (c2.PopulationUpper - c1.PopulationLower) AS Difference
+                                                    FROM CensusLower c1
+                                                    JOIN CensusUpper c2 on c1.Age = c2.Age
+                                                    ORDER BY TRY_CONVERT(INT, c1.Age);")
                                           .ToListAsync();
     }
 

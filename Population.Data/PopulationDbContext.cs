@@ -13,10 +13,17 @@ public class PopulationDbContext : DbContext
     }
 
     public DbSet<SA4PopulationData> SA4PopData { get; set; }
+    public DbSet<SA4PopulationAgeDiffData> SA4PopulationAgeDiffData { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SA4PopulationData>(entity =>
+        {
+            entity.HasNoKey();
+        });
+
+        modelBuilder.Entity<SA4PopulationAgeDiffData>(entity =>
         {
             entity.HasNoKey();
         });

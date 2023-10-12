@@ -23,7 +23,7 @@ namespace Population.Application.Queries
         }
         public async Task<SA4PopulationDataQueryResult> Handle(SA4PopulationDataQuery request, CancellationToken cancellationToken)
         {
-            var data = await _repo.GetSA4PopData(request.Payload.ASGS_2016, request.Payload.Sex);
+            var data = await _repo.GetSA4SexPopulation(request.Payload.ASGS_2016, request.Payload.Sex);
             var regionName = data.FirstOrDefault()?.Region;
 
             var result = new SA4PopulationDataQueryResult(request.Payload.ASGS_2016, regionName, data);
