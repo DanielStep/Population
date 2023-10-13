@@ -11,7 +11,7 @@ builder.Services.AddDbContext<PopulationDbContext>(options =>
 builder.Services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-                cfg.RegisterServicesFromAssembly(typeof(SA4PopulationDataQuery).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(GetSA4PopulationDataQuery).Assembly);
             });
 
 builder.Services.AddScoped<IRepository, Repository>();
