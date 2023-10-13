@@ -6,15 +6,17 @@ public class SA4PopulationDiffResult
     public string regionName { get; set; }
     public string censusYear { get; set; }
     public List<SA4PopulationDiffDTO> data { get; set; }
-    public SA4PopulationDiffResult(string ASGS_2016, string regionName, int yearLower, int yearHigher, List<SA4PopulationAgeDiff> data)
+    public SA4PopulationDiffResult(RegionCodeType regionCodeType, string genericRegionCode, int yearLower, int yearHigher, List<SA4PopulationAgeDiff> data)
     {
-        this.regionCode = ASGS_2016;
-        this.regionName = regionName;
+        this.regionCode = genericRegionCode;
+        this.regionName = regionCodeType == RegionCodeType.StateCode ? data.FirstOrDefault()?.State : data.FirstOrDefault()?.Region;
         this.censusYear = $"{yearLower}-{yearHigher}";
-        this.data = MapDataToDTO(data);
+
+        var specificRegion = regionCodeType == RegionCodeType.StateCode ? data.FirstOrDefault()?.Region : null;
+        this.data = MapDataToDTO(data,specificRegion);
     }
 
-    private List<SA4PopulationDiffDTO> MapDataToDTO(List<SA4PopulationAgeDiff> data)
+    private List<SA4PopulationDiffDTO> MapDataToDTO(List<SA4PopulationAgeDiff> data, string region)
     {
         var dtos = new List<SA4PopulationDiffDTO>();
         data.ForEach(x =>
@@ -23,7 +25,8 @@ public class SA4PopulationDiffResult
             {
                 age = x.AgeString,
                 population = x.PopulationDiff,
-                sex = x.Sex
+                sex = x.Sex,
+                region = region
             });
         });
         return dtos;
