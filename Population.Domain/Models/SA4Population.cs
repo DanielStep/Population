@@ -7,4 +7,5 @@ public class SA4Population
     public int PopulationValue { get; set; }
     public string Region { get; set; }
     public string ASGS_2016 { get; set; }
+    public string State { get; set; }
 }

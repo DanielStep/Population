@@ -15,10 +15,10 @@ namespace Population.Api.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("age-structure/{ASGS_2016}/{sex}")]
-        public async Task<IActionResult> GetAgeStructure(string ASGS_2016, string sex, CancellationToken cancellationToken)
+        [HttpGet("age-structure/{genericRegionCode}/{sex}")]
+        public async Task<IActionResult> GetAgeStructure(string genericRegionCode, string sex, CancellationToken cancellationToken)
         {
-            var payload = new SA4PopulationDataPayload() { ASGS_2016 = ASGS_2016, Sex = sex };
+            var payload = new SA4PopulationDataPayload() { GenericRegionCode = genericRegionCode, Sex = sex };
             var result = await _mediator.Send(new GetSA4PopulationDataQuery() { Payload = payload }, cancellationToken);
             return Ok(result);
         }

@@ -58,20 +58,24 @@ public class Repository : IRepository
         }
     }
 
-    public async Task<List<SA4Population>> GetSA4SexPopulation(string generalRegionCode, string sex)
+    public async Task<List<SA4Population>> GetSA4SexPopulation(RegionCodeType regionCodeType, string genericRegionCode, string sex)
     {
-        //using string interpolation to create a meta query take generalised Region code depending on range of in passed
-        return await _dbContext.SA4PopData.FromSql($@"SELECT ASGS_2016, Region, Age, AgeString, Sex, PopulationValue, CensusYear FROM FactPopulation
-                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
-                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
-                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
-                                                        WHERE DimRegion.ASGS_2016 = {generalRegionCode} AND
-                                                              DimSex.Sex_ABS = {sex}
-                                                        ORDER BY TRY_CONVERT(INT, DimAge.Age), CensusYear;")
+        return await _dbContext.SA4PopData.FromSql($@"DECLARE @RegionCodeType INT = {(int)regionCodeType} 
+
+                                                    SELECT State, ASGS_2016, Region, Age, AgeString, Sex, PopulationValue, CensusYear FROM FactPopulation
+                                                    JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
+                                                    JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
+                                                    JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                    WHERE ((@RegionCodeType = 0 AND DimRegion.StateCode = {genericRegionCode})
+                                                            OR 
+                                                        (@RegionCodeType = 1 AND DimRegion.ASGS_2016 = {genericRegionCode}))
+                                                        AND 
+                                                        DimSex.Sex_ABS = {sex}
+                                                    ORDER BY TRY_CONVERT(INT, DimRegion.ASGS_2016), TRY_CONVERT(INT, DimAge.Age), CensusYear;")
                                           .ToListAsync();
     }
 
-    public async Task<List<SA4PopulationAgeDiff>> GetSA4PopulationAgeDiff(string generalRegionCode, string sex, int yearLower, int yearHigher)
+    public async Task<List<SA4PopulationAgeDiff>> GetSA4PopulationAgeDiff(string genericRegionCode, string sex, int yearLower, int yearHigher)
     {
         return await _dbContext.SA4PopulationAgeDiffData.FromSql($@"WITH CensusLower AS (
                                                         SELECT Age, AgeString, Region, Sex, PopulationValue AS PopulationLower
@@ -80,7 +84,7 @@ public class Repository : IRepository
                                                         JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
                                                         JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
                                                         WHERE CensusYear = {yearLower} AND
-                                                        ASGS_2016 = {generalRegionCode} AND
+                                                        ASGS_2016 = {genericRegionCode} AND
                                                         Sex_ABS = {sex}
                                                     ),
                                                     CensusUpper AS (
@@ -90,7 +94,7 @@ public class Repository : IRepository
                                                         JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
                                                         JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
                                                         WHERE CensusYear = {yearHigher} AND
-                                                        ASGS_2016 = {generalRegionCode} AND
+                                                        ASGS_2016 = {genericRegionCode} AND
                                                         Sex_ABS = {sex}
                                                     )
 
