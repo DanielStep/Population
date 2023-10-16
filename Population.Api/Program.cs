@@ -39,3 +39,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+//For Population.Test
+public partial class Program { }
