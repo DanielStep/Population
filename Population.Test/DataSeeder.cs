@@ -4,6 +4,7 @@ using System;
 public class DataSeeder
 {
     private readonly PopulationDbContext _context;
+
     public DataSeeder(PopulationDbContext context)
     {
         _context = context;
@@ -11,72 +12,47 @@ public class DataSeeder
 
     public void Seed(Guid factPopulationId)
     {
-        var factPopulation = new FactPopulation
+        var factPopulation = _context.FactPopulation.Find(factPopulationId);
+        if (factPopulation == null)
         {
-            Id = factPopulationId,
-            PopulationTime = 2011,
-            CensusYear = 2011,
-            PopulationValue = 9999
-        };
+            factPopulation = new FactPopulation();
 
-        var dimAge = new DimAge
-        {
-            Age = "25",
-            AgeString = "25 years",
-            PopulationId = factPopulationId
-        };
+            var dimSex = _context.DimSex.FirstOrDefault(x => x.Sex_ABS == "1");
+            var dimAge = _context.DimAge.FirstOrDefault(x => x.Age == "10");
 
-        var dimSex = new DimSex
-        {
-            Sex_ABS = "1",
-            Sex = "Male",
-            PopulationId = factPopulationId
-        };
+            var dimRegion = new DimRegion { StateCode = "1", State = "New South Wales", Region = "NSW Test Region", ASGS_2016 = "9999" };
+            _context.DimRegion.Add(dimRegion);
 
-        var dimRegion = new DimRegion
-        {
-            StateCode = "1",
-            State = "NSW",
-            Region = "Sydney - City and Inner South",
-            ASGS_2016 = "999999999",
-            PopulationId = factPopulationId
-        };
+            if (dimSex != null && dimAge != null && dimRegion != null)
+            {
+                factPopulation.Id = factPopulationId;
+                factPopulation.PopulationTime = 2011;
+                factPopulation.CensusYear = 2011;
+                factPopulation.PopulationValue = 999;
+                factPopulation.DimSexFk = dimSex.Id;
+                factPopulation.DimAgeFk = dimAge.Id;
+                factPopulation.DimRegionFk = dimRegion.Id;
 
-        _context.FactPopulation.Add(factPopulation);
-        _context.DimAge.Add(dimAge);
-        _context.DimSex.Add(dimSex);
-        _context.DimRegion.Add(dimRegion);
+                _context.FactPopulation.Add(factPopulation);
+            }
 
-        _context.SaveChanges();
+            _context.SaveChanges();
+        }
     }
 
     public void DeleteSeededData(Guid factPopulationId)
     {
-        var regionToDelete = _context.DimRegion.FirstOrDefault(r => r.PopulationId == factPopulationId);
-        var sexToDelete = _context.DimSex.FirstOrDefault(s => s.PopulationId == factPopulationId);
-        var ageToDelete = _context.DimAge.FirstOrDefault(a => a.PopulationId == factPopulationId);
-        var populationToDelete = _context.FactPopulation.FirstOrDefault(p => p.Id == factPopulationId);
-
-        if (regionToDelete != null)
+        var factPopulation = _context.FactPopulation.Find(factPopulationId);
+        if (factPopulation != null)
         {
-            _context.DimRegion.Remove(regionToDelete);
-        }
+            _context.FactPopulation.Remove(factPopulation);
+            var dimRegion = _context.DimRegion.FirstOrDefault(dr => dr.Id == factPopulation.DimRegionFk);
+            if (dimRegion != null)
+            {
+                _context.DimRegion.Remove(dimRegion);
+            }
 
-        if (sexToDelete != null)
-        {
-            _context.DimSex.Remove(sexToDelete);
+            _context.SaveChanges();
         }
-
-        if (ageToDelete != null)
-        {
-            _context.DimAge.Remove(ageToDelete);
-        }
-
-        if (populationToDelete != null)
-        {
-            _context.FactPopulation.Remove(populationToDelete);
-        }
-
-        _context.SaveChanges();
     }
 }

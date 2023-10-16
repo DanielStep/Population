@@ -5,7 +5,6 @@ public class DimRegion
     public string State { get; set; }
     public string Region { get; set; }
     public string ASGS_2016 { get; set; }
-    public Guid PopulationId { get; set; }
 
-    public FactPopulation Population { get; set; }
+    public virtual ICollection<FactPopulation> Populations { get; set; }
 }

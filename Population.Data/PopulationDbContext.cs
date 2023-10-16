@@ -39,29 +39,25 @@ public class PopulationDbContext : DbContext
             entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
         });
 
-        modelBuilder.Entity<DimAge>(entity =>
-        {
-            entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-            entity.HasOne(d => d.Population)
-                .WithOne(p => p.Age)
-                .HasForeignKey<DimAge>(d => d.PopulationId);
-        });
+        modelBuilder.Entity<DimSex>().HasKey(s => s.Id);
+        modelBuilder.Entity<DimAge>().HasKey(a => a.Id);
+        modelBuilder.Entity<DimRegion>().HasKey(r => r.Id);
+        modelBuilder.Entity<FactPopulation>().HasKey(p => p.Id);
 
-        modelBuilder.Entity<DimSex>(entity =>
-        {
-            entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-            entity.HasOne(d => d.Population)
-                .WithOne(p => p.Sex)
-                .HasForeignKey<DimSex>(d => d.PopulationId);
-        });
+        modelBuilder.Entity<FactPopulation>()
+            .HasOne(p => p.DimSex)
+            .WithMany(s => s.Populations)
+            .HasForeignKey(p => p.DimSexFk);
 
-        modelBuilder.Entity<DimRegion>(entity =>
-        {
-            entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-            entity.HasOne(d => d.Population)
-                .WithOne(p => p.Region)
-                .HasForeignKey<DimRegion>(d => d.PopulationId);
-        });
+        modelBuilder.Entity<FactPopulation>()
+            .HasOne(p => p.DimAge)
+            .WithMany(a => a.Populations)
+            .HasForeignKey(p => p.DimAgeFk);
+
+        modelBuilder.Entity<FactPopulation>()
+            .HasOne(p => p.DimRegion)
+            .WithMany(r => r.Populations)
+            .HasForeignKey(p => p.DimRegionFk);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

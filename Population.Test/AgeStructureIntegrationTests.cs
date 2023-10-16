@@ -49,6 +49,6 @@ public class AgeStructureIntegrationTests
         var stringResult = await response.Content.ReadAsStringAsync();
         var result = JObject.Parse(stringResult);
         var dataResult = result["data"].ToObject<List<SA4PopulationDTO>>();
-        dataResult.Single().population.Should().Be(9999);
+        dataResult.Single().population.Should().Be(999);
     }  
 }

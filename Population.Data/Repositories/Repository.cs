@@ -63,9 +63,9 @@ public class Repository : IRepository
         return await _dbContext.SA4PopData.FromSql($@"DECLARE @RegionCodeType INT = {(int)regionCodeType} 
 
                                                     SELECT State, ASGS_2016, Region, Age, AgeString, Sex, PopulationValue, CensusYear FROM FactPopulation
-                                                    JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
-                                                    JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
-                                                    JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                    JOIN DimRegion on FactPopulation.DimRegionFk = DimRegion.Id
+                                                    JOIN DimAge on FactPopulation.DimAgeFk = DimAge.Id
+                                                    JOIN DimSex on FactPopulation.DimSexFk = DimSex.Id
                                                     WHERE ((@RegionCodeType = 0 AND DimRegion.StateCode = {genericRegionCode})
                                                             OR 
                                                         (@RegionCodeType = 1 AND DimRegion.ASGS_2016 = {genericRegionCode}))
@@ -83,9 +83,9 @@ public class Repository : IRepository
                                                                     WITH CensusLower AS (
                                                                         SELECT [State], Age, AgeString, Region, Sex, PopulationValue AS PopulationLower
                                                                         FROM FactPopulation
-                                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
-                                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
-                                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                                        JOIN DimRegion on FactPopulation.DimRegionFk = DimRegion.Id
+                                                                        JOIN DimAge on FactPopulation.DimAgeFk = DimAge.Id
+                                                                        JOIN DimSex on FactPopulation.DimSexFk = DimSex.Id
                                                                         WHERE CensusYear = {yearLower} AND
                                                                         ((@RegionCodeType = 0 AND DimRegion.StateCode = {genericRegionCode})
                                                                             OR 
@@ -96,9 +96,9 @@ public class Repository : IRepository
                                                                     CensusUpper AS (
                                                                         SELECT Age, Region, PopulationValue AS PopulationUpper
                                                                         FROM FactPopulation
-                                                                        JOIN DimRegion on FactPopulation.Id = DimRegion.PopulationId
-                                                                        JOIN DimAge on FactPopulation.Id = DimAge.PopulationId
-                                                                        JOIN DimSex on FactPopulation.Id = DimSex.PopulationId
+                                                                        JOIN DimRegion on FactPopulation.DimRegionFk = DimRegion.Id
+                                                                        JOIN DimAge on FactPopulation.DimAgeFk = DimAge.Id
+                                                                        JOIN DimSex on FactPopulation.DimSexFk = DimSex.Id
                                                                         WHERE CensusYear = {yearHigher} AND
                                                                         ((@RegionCodeType = 0 AND DimRegion.StateCode = {genericRegionCode})
                                                                             OR 

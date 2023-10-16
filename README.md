@@ -4,6 +4,7 @@ docker run -u root -d -p 1433:1433 -v /Users/mac/Desktop/Population/Population.D
 
 docker exec population-container /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Password123! -i /usr/src/app/setup.sql
 
+dotnet run Population.Importer/Population.Importer.csproj Population.Data/ABS_C16_T01_TS_SA_08062021164508583.xls
 
 Limitations
 
