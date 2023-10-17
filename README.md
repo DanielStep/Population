@@ -76,6 +76,7 @@ Data Layer
 
 The Data layer holds the database context as well as a Repository that that abstracts it away from the application. This makes mock and testing easier. Some operations like test data creation are modeled by Entity Framework, while others are bulk inserts handled directly eg SqlBulkCopy.
 
+vw_PopulationBy5YearIntervals View has been created in the database. This was written to a certain level of granularity, but can be modified by removing groupings.
 
 ### Limitations
 
