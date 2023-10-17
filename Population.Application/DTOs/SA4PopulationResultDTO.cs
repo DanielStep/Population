@@ -1,11 +1,11 @@
 using Population.Domain;
 
-public class SA4PopulationQueryResult
+public class SA4PopulationQueryResultDTO
 {
     public string regionCode { get; set; }
     public string regionName { get; set; }
     public List<SA4PopulationDTO> data { get; set; }
-    public SA4PopulationQueryResult(RegionCodeType regionCodeType, string genericRegionCode, List<SA4Population> data)
+    public SA4PopulationQueryResultDTO(RegionCodeType regionCodeType, string genericRegionCode, List<SA4Population> data)
     {
         this.regionCode = genericRegionCode;
         this.regionName = regionCodeType == RegionCodeType.StateCode ? data.FirstOrDefault()?.State : data.FirstOrDefault()?.Region;

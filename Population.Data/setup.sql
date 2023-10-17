@@ -5,6 +5,9 @@ GO
 USE PopulationDb;
 GO
 
+
+
+
 CREATE TABLE [PopulationFlat]
 (
     [Id] UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
@@ -23,8 +26,8 @@ CREATE TABLE [PopulationFlat]
     [PopulationValue] int NULL,
     [FlagCodes] NVARCHAR(50) NULL,
     [Flags] NVARCHAR(50) NULL
-)
-
+);
+GO
 
 CREATE TABLE [DimSex]
 (
@@ -67,6 +70,41 @@ CREATE TABLE [FactPopulation]
 );
 GO
 
+-- Add Age Grouping view
+CREATE VIEW vw_PopulationBy5YearIntervals AS
+SELECT
+    (CAST(Age AS INT) / 5) * 5 AS AgeStart,
+    ((CAST(Age AS INT) / 5) * 5) + 4 AS AgeEnd,
+    s.Sex,
+    r.State,
+    r.Region,
+    CensusYear,
+    SUM(PopulationValue) AS TotalPopulation
+FROM 
+    FactPopulation fp
+JOIN 
+    DimSex s ON fp.DimSexFk = s.Id
+JOIN 
+    DimAge a ON fp.DimAgeFk = a.Id
+    AND a.Age <> 'TT'  -- Exclude rows with Age = 'TT'
+JOIN 
+    DimRegion r ON fp.DimRegionFk = r.Id
+GROUP BY 
+    (CAST(Age AS INT) / 5) * 5,
+    s.Sex,
+    r.State,
+    r.Region,
+    CensusYear;
+GO
+--Useage
+-- SELECT * FROM vw_PopulationBy5YearIntervals
+-- ORDER BY 
+--     AgeStart, 
+--     Sex, 
+--     State, 
+--     Region,
+--     CensusYear;
+
 CREATE PROCEDURE sp_normalisePopulationTable
 AS
 BEGIN
@@ -108,4 +146,8 @@ BEGIN
         DimRegion dr ON pf.StateCode = dr.StateCode AND pf.State = dr.State AND pf.Region = dr.Region AND pf.ASGS_2016 = dr.ASGS_2016
     JOIN 
         DimSex ds ON pf.Sex_ABS = ds.Sex_ABS AND pf.Sex = ds.Sex;
+
+    --Clean temporary flat table
+    TRUNCATE table [PopulationFlat];
 END
+

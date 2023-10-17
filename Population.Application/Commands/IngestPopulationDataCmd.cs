@@ -18,6 +18,7 @@ namespace Population.Application
             public async Task<Unit> Handle(IngestPopulationDataCmd cmd, CancellationToken cancellationToken)
             {
                 var dataTable = _csvParser.Parse(cmd.CsvPath);
+                //validate data table against existing year
                 await _repo.LoadPopulationData(dataTable);
                 await _repo.NormalisePopulationTable();
 

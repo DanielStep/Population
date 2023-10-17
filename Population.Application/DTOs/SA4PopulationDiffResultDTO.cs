@@ -1,12 +1,12 @@
 using Population.Domain;
 
-public class SA4PopulationDiffResult
+public class SA4PopulationDiffResultDTO
 {
     public string regionCode { get; set; }
     public string regionName { get; set; }
     public string censusYear { get; set; }
     public List<SA4PopulationDiffDTO> data { get; set; }
-    public SA4PopulationDiffResult(RegionCodeType regionCodeType, string genericRegionCode, int yearLower, int yearHigher, List<SA4PopulationAgeDiff> data)
+    public SA4PopulationDiffResultDTO(RegionCodeType regionCodeType, string genericRegionCode, int yearLower, int yearHigher, List<SA4PopulationAgeDiff> data)
     {
         this.regionCode = genericRegionCode;
         this.regionName = regionCodeType == RegionCodeType.StateCode ? data.FirstOrDefault()?.State : data.FirstOrDefault()?.Region;
