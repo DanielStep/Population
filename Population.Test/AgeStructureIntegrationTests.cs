@@ -26,9 +26,6 @@ public class AgeStructureIntegrationTests
         _dbContext = _scope.ServiceProvider.GetRequiredService<PopulationDbContext>();
 
         _dataSeeder = new DataSeeder(_dbContext);
-        _factPopulationId = Guid.NewGuid();
-        _dataSeeder.Seed(_factPopulationId);
-
     }
 
     [TearDown]
@@ -43,12 +40,49 @@ public class AgeStructureIntegrationTests
 
 
     [Test]
-    public async Task GivenRegionCodeIsASGSType_ShouldReturnSA4SpecificPopulationData()
-    {        
+    public async Task AgeStructure_GivenRegionCodeIsASGSType_ShouldReturnSA4SpecificPopulationData()
+    {
+        _factPopulationId = Guid.NewGuid();
+        _dataSeeder.Seed(_factPopulationId);
+
         var response = await _client.GetAsync($"/api/age-structure/9999/1");
+        var stringResponse = await response.Content.ReadAsStringAsync();
+        var parsed = JObject.Parse(stringResponse);
+        var resultData = parsed["data"].ToObject<List<SA4PopulationDTO>>();
+        var result = resultData.Single();
+
+        parsed.ToObject<SA4PopulationQueryResultDTO>().regionCode.Should().Be("9999");
+        result.population.Should().Be(999);
+        result.censusYear.Should().Be(2011);
+        result.age.Should().Be("10");
+        result.sex.Should().Be("Males");
+        result.region.Should().BeNull();
+    }
+
+    [Test]
+    public async Task AgeStructure_GivenNoDataPresent_ShouldReturnEmpty()
+    {
+        var response = await _client.GetAsync($"/api/age-structure/9999/3");
         var stringResult = await response.Content.ReadAsStringAsync();
         var result = JObject.Parse(stringResult);
         var dataResult = result["data"].ToObject<List<SA4PopulationDTO>>();
-        dataResult.Single().population.Should().Be(999);
-    }  
+        dataResult.Count.Should().Be(0);
+    }
+
+    [Test]
+    public async Task AgeDiffStructure_GivenRegionCodeIsStateType_ShouldReturnDataOverRegions()
+    {
+        var response = await _client.GetAsync($"/api/age-structure-diff/1/1/2011/2016");
+        var stringResponse = await response.Content.ReadAsStringAsync();
+        var parsed = JObject.Parse(stringResponse);
+        var dataResult = parsed["data"].ToObject<List<SA4PopulationDiffDTO>>();
+
+        var queryResult = parsed.ToObject<SA4PopulationDiffResultDTO>();
+        queryResult.censusYear.Should().Be("2011-2016");
+        queryResult.regionCode.Should().Be("1");
+        queryResult.regionName.Should().Be("New South Wales");
+        var regionResult = dataResult.Select(x => x.region);
+        regionResult.Should().NotContainNulls();
+    }
+
 }

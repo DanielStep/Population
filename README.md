@@ -34,7 +34,7 @@ Population.Importer
 
 From the Population.Importer directory run the following command:
 
-`dotnet run ../Population.Data/ABS_C16_T01_TS_SA_08062021164508583.xls1`
+`dotnet run ../Population.Data/ABS_C16_T01_TS_SA_08062021164508583.xls`
 
 Population.Api
 
