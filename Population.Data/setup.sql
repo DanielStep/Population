@@ -111,7 +111,12 @@ BEGIN
     --Normalise Age dimension
     INSERT INTO DimAge (Age, AgeString)
     SELECT DISTINCT Age, AgeString 
-    FROM PopulationFlat;
+    FROM PopulationFlat pf
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM DimAge da 
+        WHERE da.Age = pf.Age
+    );
 
     --Normalise Region dimension
     INSERT INTO DimRegion (StateCode, [State], Region, ASGS_2016)
@@ -120,14 +125,24 @@ BEGIN
         [State], 
         Region, 
         ASGS_2016
-    FROM PopulationFlat;
+    FROM PopulationFlat pf
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM DimRegion dr
+        WHERE dr.ASGS_2016 = pf.ASGS_2016
+    );
 
     --Normalise Sex dimension
     INSERT INTO DimSex (Sex_ABS, Sex)
     SELECT DISTINCT 
         Sex_ABS, 
         Sex 
-    FROM PopulationFlat;
+    FROM PopulationFlat pf
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM DimSex ds
+        WHERE ds.Sex_ABS = pf.Sex_ABS
+    );
 
     --Populate Fact table
     INSERT INTO FactPopulation (PopulationTime, CensusYear, PopulationValue, DimAgeFk, DimRegionFk, DimSexFk)
@@ -145,7 +160,12 @@ BEGIN
     JOIN 
         DimRegion dr ON pf.StateCode = dr.StateCode AND pf.State = dr.State AND pf.Region = dr.Region AND pf.ASGS_2016 = dr.ASGS_2016
     JOIN 
-        DimSex ds ON pf.Sex_ABS = ds.Sex_ABS AND pf.Sex = ds.Sex;
+        DimSex ds ON pf.Sex_ABS = ds.Sex_ABS AND pf.Sex = ds.Sex
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM FactPopulation fp
+        WHERE fp.PopulationValue = pf.PopulationValue AND fp.PopulationTime = pf.PopulationTime
+    );
 
     --Clean temporary flat table
     TRUNCATE table [PopulationFlat];

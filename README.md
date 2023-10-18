@@ -84,11 +84,11 @@ Due to time constraints, the following limitations exist:
 
 - Connection string are hardcoded into appsettings.json containing secrets. Of course these should be injected at during deployment from secrets vault.
 
-- There is insufficient validation of the csv data being imported. Given more time validation would be done on the data to ensure it is in the correct format, and also to avoid duplicate data eg for existing Census Years.
+- There is insufficient validation of the csv data being imported. Given more time validation would be done on the data to ensure it is in the correct format.
 
 - SQL queries are hardcoded into the repository. Given more time these would be moved to stored procedures.
 
-- Unit tests should be written to cover the repository and service layers. As well as more detailed integration tests, the types of scenarios can be discussed further.
+- Unit tests should be written to cover the repository and service layers.
 
 - Integration test are run on application database. Of course automated testing should never be done on the application database due to risk of data corruption, and a test database should be reproduced. This was mitigated by seeding and tearing down of isolated test data.
 
